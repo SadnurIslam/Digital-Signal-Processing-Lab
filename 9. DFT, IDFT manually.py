@@ -1,98 +1,97 @@
-'''
-DFT of xa(t)=sin(2π⋅1000t)+0.5sin(2π⋅2000t+4π). Also IDFT. DFT with
-window + window function realization
-
-'''
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ---------- Step 1: Sample the Analog Signal ----------
-fs = 8000  # Sampling frequency (must be > 4000 Hz)
-N = 64     # Number of samples
-t = np.arange(N) / fs
+# Parameters
+N = 64
+fs = 8000
+n = np.arange(N)
+t = n / fs
 
-# Sampled composite signal: sin(2π⋅1000t) + 0.5sin(2π⋅2000t + 4π)
-x = np.sin(2*np.pi*1000*t) + 0.5*np.sin(2*np.pi*2000*t + 4*np.pi)
+# Original signal xa(t)
+def xa(t):
+    return np.sin(2 * np.pi * 1000 * t) + 0.5 * np.sin(2 * np.pi * 2000 * t + 4 * np.pi)
 
-# ---------- Step 2: Define Manual Hanning Window ----------
+# Corrected Hanning Window
 def hanning(N):
-    return np.array([0.5 - 0.5 * np.cos(2 * np.pi * n / (N - 1)) for n in range(N)])
+    return 0.5 * (1 - np.cos(2 * np.pi * np.arange(N) / (N - 1)))
 
-# ---------- Step 3: Manual DFT and IDFT ----------
-def DFT(x):
+# DFT Implementation
+def dft(x):
     N = len(x)
-    X = []
+    X = np.zeros(N, dtype=complex)
     for k in range(N):
-        sum_val = 0
         for n in range(N):
-            sum_val += x[n] * np.exp(-2j * np.pi * k * n / N)
-        X.append(sum_val)
-    return np.array(X)
+            X[k] += x[n] * np.exp(-2j * np.pi * k * n / N)
+    return X
 
-def IDFT(X):
+# IDFT Implementation
+def idft(X):
     N = len(X)
-    x_recon = []
+    x = np.zeros(N, dtype=complex)
     for n in range(N):
-        sum_val = 0
         for k in range(N):
-            sum_val += X[k] * np.exp(2j * np.pi * k * n / N)
-        x_recon.append(sum_val / N)
-    return np.array(x_recon)
+            x[n] += X[k] * np.exp(2j * np.pi * k * n / N)
+        x[n] /= N
+    return x
 
-# ---------- Step 4: Apply DFT With and Without Window ----------
-X_plain = DFT(x)
+# Signals
+x = xa(t)
+window = hanning(N)
+x_win = x * window
 
-w = hanning(N)
-x_win = x * w
-X_win = DFT(x_win)
+# DFTs
+X = dft(x)
+X_win = dft(x_win)
 
-# ---------- Step 5: Frequency Axis ----------
-f = np.arange(N) * fs / N  # Frequency axis
+# IDFTs
+x_recon = idft(X)
+x_recon_win = idft(X_win)
 
-# ---------- Step 6: Plot ----------
-plt.figure(figsize=(14, 8))
+# Frequency axis
+freq = np.arange(N) * fs / N
 
-# Original Time Domain Signal
-plt.subplot(3, 1, 1)
-plt.plot(t, x, label='Original x[n]')
-plt.title('Sampled Signal x[n]')
-plt.xlabel('Time (s)')
-plt.ylabel('Amplitude')
+# Plotting
+plt.figure(figsize=(12, 10))
+
+# Time-domain signals
+plt.subplot(3, 2, 1)
+plt.plot(t, x, label="Original", color='g')
+plt.plot(t, x_win, label="Hanning Applied", color='r')
+plt.title("Time Domain Signals")
+plt.xlabel("Time (s)")
+plt.legend()
+plt.grid(True)
+
+# Window
+plt.subplot(3, 2, 2)
+plt.plot(window, label="Hanning Window")
+plt.title("Window Function")
 plt.grid(True)
 plt.legend()
 
-# DFT Magnitude Without Window
-plt.subplot(3, 1, 2)
-plt.stem(f, np.abs(X_plain))
-plt.title('DFT Magnitude (without window)')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('|X[k]|')
-plt.grid(True)
-
-# DFT Magnitude With Hanning Window
-plt.subplot(3, 1, 3)
-plt.stem(f, np.abs(X_win), linefmt='g-', markerfmt='go', basefmt=' ')
-plt.title('DFT Magnitude (with Hanning window)')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('|X[k] with window|')
-plt.grid(True)
-
-plt.tight_layout()
-plt.show()
-
-# ---------- Step 7: Plot Reconstructed Signal via IDFT ----------
-x_recon = IDFT(X_plain)
-
-plt.figure(figsize=(10, 4))
-plt.plot(np.real(x_recon), label='Reconstructed (IDFT)', color='blue')
-plt.plot(x, '--', label='Original', color='red')
-plt.title("Signal Reconstruction using IDFT")
-plt.xlabel("Sample Index")
-plt.ylabel("Amplitude")
+# Magnitude Spectrum
+plt.subplot(3, 2, 3)
+plt.stem(freq, np.abs(X), label="DFT |X[k]|")
+plt.title("DFT Magnitude (Original)")
+plt.xlabel("Frequency (Hz)")
 plt.grid(True)
 plt.legend()
+
+plt.subplot(3, 2, 4)
+plt.stem(freq, np.abs(X_win), label="DFT |X[k]| with Hanning", linefmt='r-', markerfmt='ro')
+plt.title("DFT Magnitude (Windowed)")
+plt.xlabel("Frequency (Hz)")
+plt.grid(True)
+plt.legend()
+
+# Time-domain reconstruction
+plt.subplot(3, 2, 5)
+plt.plot(t, np.real(x_recon), label="IDFT of Original", color='g')
+plt.plot(t, np.real(x_recon_win), label="IDFT of Windowed", color='r')
+plt.title("Reconstructed Signals")
+plt.xlabel("Time (s)")
+plt.grid(True)
+plt.legend()
+
 plt.tight_layout()
 plt.show()
