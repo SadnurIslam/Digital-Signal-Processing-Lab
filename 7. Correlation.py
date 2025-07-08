@@ -28,8 +28,8 @@ def correlation(x, y):
     result = []
     for n in range(0, x_len + y_len - 1):
         sum = 0
-        for k in range(x_len):
-            if n - k >= 0 and n - k < y_len:
+        for k in range(0,len(x)):
+            if(n-k>=0 and n-k<len(y)):
                 sum += x[k] * y[n - k]
         result.append(sum)
     return np.array(result)

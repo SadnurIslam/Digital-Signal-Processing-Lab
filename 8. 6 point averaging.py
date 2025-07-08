@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # Example signal: slow sine + fast sine (noise-like)
 fs = 100  # Sampling frequency
 t = np.arange(0, 2, 1/fs)
-x = np.sin(2*np.pi*2*t) + 0.4*np.sin(2*np.pi*20*t)  # 2 Hz signal + 20 Hz noise
+x = np.sin(2*np.pi*2*t) + 0.5*np.sin(2*np.pi*20*t)  # 2 Hz signal + 20 Hz noise
 print(x)
 # 6-point averaging filter
 def six_point_averaging(x):

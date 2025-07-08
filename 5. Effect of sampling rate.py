@@ -31,7 +31,7 @@ def plotting(x,y,sub,title):
     plt.title(title)
     plt.grid(True)
     
-fs = [1500, 1000, 800]  # Sampling frequencies
+fs = [2400, 1000, 800]  # Sampling frequencies
 pos = 0
 for i in fs:
     pos += 1
