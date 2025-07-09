@@ -18,6 +18,7 @@ def hanning(N):
 # DFT Implementation
 def dft(x):
     N = len(x)
+    print(N)
     X = np.zeros(N, dtype=complex)
     for k in range(N):
         for n in range(N):
